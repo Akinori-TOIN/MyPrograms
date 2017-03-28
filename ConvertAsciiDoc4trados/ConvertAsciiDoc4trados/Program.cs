@@ -15,11 +15,9 @@ namespace ConvertAsciiDoc4trados
 
         private const string HEADHTML1 = "<html><head><meta http-equiv=&quot;Content-Type&quot;content=&quot;text/html;charset=UTF-8&quot;/></head><body><br>";
         private const string HEADHTML2 = "</body></html>";
-        //private const string[] tags = { }
 
         static void Main(string[] args)
         {
-            //Console.WriteLine(System.Environment.CommandLine)
 
             //Get command line with array
             string[] cmds = null;
@@ -203,16 +201,6 @@ namespace ConvertAsciiDoc4trados
                 // トラドスに削除された改行を復活
                 for(int i=0; i<conts.Length; i++)
                 {
-                    //Regex reg = new Regex("<[^<|>]+?> <[^<|>]+?>");
-                    //Match m = reg.Match(conts[i]);
-                    //if (m.Success)
-                    //{
-                    //    for (int ctr = 0; ctr < m.Groups.Count; ctr++)
-                    //    {
-                    //        var temp = System.Text.RegularExpressions.Regex.Replace(conts[i], "(<[^<|>]+?>) (<[^<|>]+?>)", "$1$2");
-                    //        conts[i] = temp;
-                    //    }
-                    //}
 
                     Regex reg = new Regex("<br>");
                     Match m = reg.Match(conts[i]);
@@ -225,6 +213,8 @@ namespace ConvertAsciiDoc4trados
                             conts[i] = temp;
                             // なぜかTradosから訳文生成すると、<br>の後ろにスペースが入るので削除
                             temp = System.Text.RegularExpressions.Regex.Replace(conts[i], "<br></code> ", Environment.NewLine);
+                            conts[i] = temp;
+                            temp = System.Text.RegularExpressions.Regex.Replace(conts[i], "<br></code>", "");
                             conts[i] = temp;
                             temp = System.Text.RegularExpressions.Regex.Replace(conts[i], "<br> ", Environment.NewLine);
                             conts[i] = temp;
@@ -271,11 +261,12 @@ namespace ConvertAsciiDoc4trados
             string reg111 = "^##BRAL####BRAL##.*?##BRAR####BRAR##";
             string reg2 = "^=+";
             string reg21 = "^##PLUS##$";
-            string reg3 = "https?.+?##BRAL##.+?##BRAR##";
+            string reg3 = "https?.+?##BRAL##((?!http:).)+?##BRAR##";
             // \{[^\{|\}]+?\}/[^\{|\}]+?\[[^\{|\}]+?\]
             //string reg31 = "##CurlybL##.+?##CurlybR##/.+?##BRAL##.+?##BRAR##";
             string reg31 = "##CurlybL##((?!##CurlybR##|##CurlybL##).)*?##CurlybR##/((?!##CurlybR##|##CurlybL##).)*?##BRAL##((?!##CurlybR##|##CurlybL##).)*?##BRAR##";
             string reg32 = "##CurlybL##.+?##CurlybR####BRAL##.+?##BRAR##";
+            string reg33 = "##CurlybL##.+?##CurlybR##((?! ).)+?##BRAL##((?!##BRAL##).)+?##BRAR##";
 
             // Open Blocks
             string reg4 = "^-{3,}(<br>)?$";
@@ -334,12 +325,8 @@ namespace ConvertAsciiDoc4trados
             //^-{3,}
             breaklineProcess(ref lines);
 
-            ////////////////////////////////////
-            // ^-{3,}(<br>)?$
-            //inputCodeTag(reg4, ref lines);
+            replaceCodeBlockWithoutDelimiters(ref lines);
 
-
-            //replaceCodeBlockWithoutDelimiters(ref lines);
 
             for (int i=0; i<lines.Length; i++)
             {
@@ -384,14 +371,15 @@ namespace ConvertAsciiDoc4trados
                 // ^+$
                 replaceMach2CODE(reg21, ref lines[i]);
                 // "http.+?\\[.+?\\]"
-                replaceMach2CODE(reg3, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg3, ref lines[i]);
                 // {.+?}.+?[.+?]
                 replaceMach2CODE_NonGroup2(reg31, ref lines[i]);
                 replaceMach2CODE(reg32, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg33, ref lines[i]);
                 // "\*"
                 //replaceMach2CODE(reg6, ref lines[i]);
                 replaceMach2CODE(reg61, ref lines[i]);
-                replaceMach2CODE_NonGroup2(reg63, ref lines[i]);
+                replaceMach2CODE_NonGroup3(reg63, ref lines[i]);
                 replaceMach2CODE_NonGroup(reg64, ref lines[i]);
 
                 // "^include::.+\\[\\]"
@@ -413,7 +401,7 @@ namespace ConvertAsciiDoc4trados
                 // **
                 replaceMach2CODE(reg14, ref lines[i]);
                 // ::$
-                replaceMach2CODE_NonGroup2(reg16, ref lines[i]);
+                replaceMach2CODE_NonGroup3(reg16, ref lines[i]);
                 //replaceMachTable(reg15, ref lines[i]);
                 // ^|
                 //replaceMachTable(reg16, ref lines[i]);
@@ -507,9 +495,48 @@ namespace ConvertAsciiDoc4trados
                 }
             }
         }
-
         // <code>
         private static void replaceMach2CODE_NonGroup2(string strReg, ref string line)
+        {
+            Regex reg = new Regex(strReg);
+            Match m = reg.Match(line);
+            if (m.Success)
+            {
+
+                Regex reg1 = new Regex("<pre>[^ ]+?</pre>");
+                Match m1 = reg1.Match(line);
+                if (m1.Success)
+                {
+
+                }
+                else
+                {
+                    while (m.Success)
+                    {
+                        //////////////////////////////////////
+                        var rep = "<code>" + m.Value + "</code>";
+                        if (m.Value.Contains("["))
+                        {
+                            var str = @"\" + m.Value + @"\";
+                            var temp = System.Text.RegularExpressions.Regex.Replace(line, str, rep);
+                            line = temp;
+                        }
+                        else
+                        {
+
+                            var temp = System.Text.RegularExpressions.Regex.Replace(line, m.Value, rep);
+                            line = temp;
+
+                        }
+                        m = m.NextMatch();
+                    }
+
+                }
+            }
+        }
+
+        // <code>
+        private static void replaceMach2CODE_NonGroup3(string strReg, ref string line)
         {
             Regex reg = new Regex(strReg);
             Match m = reg.Match(line);
@@ -694,28 +721,6 @@ namespace ConvertAsciiDoc4trados
             }
         }
 
-        // <Format>
-        //private static void replaceMach2FORM_Grave_accent(string strReg, ref string line)
-        //{
-        //    Regex reg = new Regex(strReg);
-        //    Match m = reg.Match(line);
-        //    if (m.Success)
-        //    {
-        //        for (int ctr = 0; ctr < m.Groups.Count; ctr++)
-        //        {
-        //            Regex reg1 = new Regex("`");
-        //            Match m1 = reg1.Match(m.Groups[ctr].Value);
-        //            if (m1.Success)
-        //            {
-        //                var rep = "<form>" + m1.Groups[ctr].Value + "</form>";
-        //                var temp = System.Text.RegularExpressions.Regex.Replace(line, "`", rep);
-        //                line = temp;
-        //            }
-
-        //        }
-
-        //    }
-        //}
 
         // For coding text part
         private static void inputCodeTag(string strReg, ref string[] lines)
@@ -954,26 +959,7 @@ namespace ConvertAsciiDoc4trados
                 }
                 else
                 {
-                    //// ^-{3,}   
-                    //if (System.Text.RegularExpressions.Regex.IsMatch(lines[i], strReg))
-                    //{
-                    //    if (findCodeHead)
-                    //    {
-                    //        findCodeHead = false;
-                    //        lines[i] += "<br>";
-                    //    }
-                    //    else
-                    //    {
-                    //        findCodeHead = true;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    if (findCodeHead == false)
-                    //    {
-                    //        lines[i] += "<br>";
-                    //    }
-                    //}
+
                 }
             }
         }
@@ -1197,9 +1183,6 @@ namespace ConvertAsciiDoc4trados
 
         private static void escapeLineBreak(ref string line)
         {
-            //var temp = "";
-            //temp = System.Text.RegularExpressions.Regex.Replace(line, Environment.NewLine, "<br>");
-            //line = temp;
             Regex reg = new Regex("<br>");
             Match m = reg.Match(line);
             if (m.Success)
@@ -1322,17 +1305,10 @@ namespace ConvertAsciiDoc4trados
             //}
         }
 
-        ////////////////////////////// ここから
         private static void deleteTag(ref string[] conts)
         {
             for (int i = 0; i < conts.Length; i++)
             {
-                //if (i == 0)
-                //{
-                //    var temp = System.Text.RegularExpressions.Regex.Replace(conts[i], HEADHTML1, "");
-                //    conts[i] = temp;
-                //    i++;
-                //}
 
                 Regex reg = new Regex("<.*?>");
                 Match m = reg.Match(conts[i]);
@@ -1672,6 +1648,14 @@ namespace ConvertAsciiDoc4trados
                 else if (m5.Success)
                 {
                     findCodeHead = true;
+                    var noDelimiter = false;
+
+                    // If there are ----- marks between [source, ]
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(lines[i + 1], "^-{4,}"))
+                    {
+                        noDelimiter = true;
+                    }
+
                     while (i < lines.Length - 1)
                     {
                         if (System.Text.RegularExpressions.Regex.IsMatch(lines[i+1], "^-{4,}"))
@@ -1688,8 +1672,12 @@ namespace ConvertAsciiDoc4trados
                             }
                             newLines.Add(lines[i]);
                             i++;
-
                         }
+                    }
+                    // If there are ----- marks between [source, ]
+                    if (noDelimiter && i == lines.Length -1)
+                    {
+                        newLines.Add(lines[i]);
                     }
                 }
                 // For blank line
@@ -1833,15 +1821,7 @@ namespace ConvertAsciiDoc4trados
                             }
                             break;
                         }
-                        //else if (System.Text.RegularExpressions.Regex.IsMatch(lines[i], "^\\. "))
-                        //{
-                        //    if (!temp.Equals(""))
-                        //    {
-                        //        newLines.Add(lines[i]);
-                        //    }
-                        //    newLines.Add(lines[i]);
-                        //    temp = "";
-                        //}
+
                         //////////////////////////
                         ////////////////////////// ここの修正が必要
                         else if (System.Text.RegularExpressions.Regex.IsMatch(lines[i], "^\\*+ "))
@@ -1917,16 +1897,7 @@ namespace ConvertAsciiDoc4trados
                         else if (temp == "")
                         {
                             temp += lines[i];
-                            //if (lines[i + 1].Equals(""))
-                            //{
-                            //    newLines.Add(temp);
-                            //    break;
-                            //}
-                            //else
-                            //{
-                            //    temp += " " + lines[i + 1];
-                            //    i++;
-                            //}
+
                             if (i == lines.Length - 1)
                             {
                                 newLines.Add(temp);

@@ -4,3 +4,9 @@ D:\VisualStudio2015_project\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\bin\De
 D:\VisualStudio2015_project\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\obj\Debug\ConvertAsciiDoc4trados.exe
 D:\VisualStudio2015_project\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\obj\Debug\ConvertAsciiDoc4trados.pdb
 D:\VisualStudio2015_project\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\obj\Debug\ConvertAsciiDoc4trados.csprojResolveAssemblyReference.cache
+D:\MyPrograms\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\bin\Debug\ConvertAsciiDoc4trados.exe.config
+D:\MyPrograms\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\obj\Debug\ConvertAsciiDoc4trados.exe
+D:\MyPrograms\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\obj\Debug\ConvertAsciiDoc4trados.pdb
+D:\MyPrograms\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\bin\Debug\ConvertAsciiDoc4trados.exe
+D:\MyPrograms\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\bin\Debug\ConvertAsciiDoc4trados.pdb
+D:\MyPrograms\ConvertAsciiDoc4trados\ConvertAsciiDoc4trados\obj\Debug\ConvertAsciiDoc4trados.csprojResolveAssemblyReference.cache
