@@ -259,14 +259,14 @@ namespace ConvertAsciiDoc4trados
         {
             string reg1 = "^##BRAL##([^##BRAL##|##BRAR##])+?##BRAR##";
             string reg111 = "^##BRAL####BRAL##.*?##BRAR####BRAR##";
-            string reg2 = "^=+";
-            string reg21 = "^##PLUS##$";
-            string reg3 = "https?.+?##BRAL##((?!http:).)+?##BRAR##";
+            string reg2 = "^=+ ";
+            string reg21 = "^##PLUS## *<br>";
+            string reg3 = "https?.+?##BRAL##((?!http:).)+?##BRAR##?";
             // \{[^\{|\}]+?\}/[^\{|\}]+?\[[^\{|\}]+?\]
             //string reg31 = "##CurlybL##.+?##CurlybR##/.+?##BRAL##.+?##BRAR##";
-            string reg31 = "##CurlybL##((?!##CurlybR##|##CurlybL##).)*?##CurlybR##/((?!##CurlybR##|##CurlybL##).)*?##BRAL##((?!##CurlybR##|##CurlybL##).)*?##BRAR##";
+            string reg31 = "##CurlybL##((?!##CurlybR##|##CurlybL##).)*?##CurlybR##/?((?!##CurlybR##|##CurlybL##|##DOTT## ).)*?##BRAL##((?!##CurlybR##|##CurlybL##).)*?##BRAR##";
             string reg32 = "##CurlybL##.+?##CurlybR####BRAL##.+?##BRAR##";
-            string reg33 = "##CurlybL##.+?##CurlybR##((?! ).)+?##BRAL##((?!##BRAL##).)+?##BRAR##";
+            //string reg33 = "##CurlybL##.+?##CurlybR##((?! ).)+?##BRAL##((?!##BRAL##).)+?##BRAR##";
 
             // Open Blocks
             string reg4 = "^-{3,}(<br>)?$";
@@ -277,15 +277,21 @@ namespace ConvertAsciiDoc4trados
             //////
 
             string reg6 = "^##ASTA##[^##ASTA##]+?##ASTA##";
-            string reg61 = "^##PLUS##";
+            string reg61 = "^##PLUS## ";
             string reg62 = "^##ASTA## ";
-            string reg63 = "^##DOTT##";
+            string reg63 = "^(##DOTT##){1,} ";
             string reg64 = "^(##ASTA##){4,}";
+
+            string reg65 = "^NOTE: *";
+            string reg66 = "^CAUTION: *";
+            string reg67 = "^TIP: *";
+            string reg68 = "^WARNING: *";
+            string reg69 = "^IMPORTANT: *";
 
             //string reg7 = "(\\S):{2,}$";
             //string reg71 = "(\\S):{2,} ";
-            string reg8 = "^/{2}[^/]+$";
-            string reg81 = "^/{3,}";
+            //string reg8 = "^/{2}[^/]+$";
+            //string reg81 = "^/{3,}";
             
             string reg9 = "<<[^>]*?>>";
             string reg90 = "^>>> ";
@@ -340,8 +346,15 @@ namespace ConvertAsciiDoc4trados
 
                 // escape space after colon
                 replaceColonSpace(ref lines[i]);
-                // escape space after period
-                //replacePeriodSpace(ref lines[i]);
+
+                // NOTE:
+                replaceMach2CODE_NonGroup2(reg65, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg66, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg67, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg68, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg69, ref lines[i]);
+
+
                 // escape head space
                 replaceHeadSpace(ref lines[i]);
                 // escape table space
@@ -374,8 +387,9 @@ namespace ConvertAsciiDoc4trados
                 replaceMach2CODE_NonGroup2(reg3, ref lines[i]);
                 // {.+?}.+?[.+?]
                 replaceMach2CODE_NonGroup2(reg31, ref lines[i]);
-                replaceMach2CODE(reg32, ref lines[i]);
-                replaceMach2CODE_NonGroup2(reg33, ref lines[i]);
+                //replaceMach2CODE(reg32, ref lines[i]);
+                //replaceMach2CODE_NonGroup2(reg33, ref lines[i]);
+                
                 // "\*"
                 //replaceMach2CODE(reg6, ref lines[i]);
                 replaceMach2CODE(reg61, ref lines[i]);
@@ -451,6 +465,12 @@ namespace ConvertAsciiDoc4trados
 
                             var temp = System.Text.RegularExpressions.Regex.Replace(line, m.Groups[ctr].Value, rep);
                             line = temp;
+                            // replace <br></code>
+                            if (System.Text.RegularExpressions.Regex.IsMatch(line, "<br></code>"))
+                            {
+                                temp = System.Text.RegularExpressions.Regex.Replace(line, "<br></code>", "</code><br>");
+                                line = temp;
+                            }
 
                         }
 
@@ -624,17 +644,17 @@ namespace ConvertAsciiDoc4trados
             //}
         }
 
-        private static void replacePeriodSpace(ref string line)
-        {
-            Regex reg = new Regex("##DOTT## +");
-            Match m = reg.Match(line);
-            while (m.Success)
-            {
-                var temp = System.Text.RegularExpressions.Regex.Replace(line, "##DOTT##( +)", "##DOTT##<pre>$1</pre>");
-                line = temp;
-                m = m.NextMatch();
-            }
-        }
+        //private static void replacePeriodSpace(ref string line)
+        //{
+        //    Regex reg = new Regex("##DOTT## +");
+        //    Match m = reg.Match(line);
+        //    while (m.Success)
+        //    {
+        //        var temp = System.Text.RegularExpressions.Regex.Replace(line, "##DOTT##( +)", "##DOTT##<pre>$1</pre>");
+        //        line = temp;
+        //        m = m.NextMatch();
+        //    }
+        //}
 
         private static void replaceExclamationSpace(ref string line)
         {
