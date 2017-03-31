@@ -271,6 +271,7 @@ namespace ConvertAsciiDoc4trados
             // Open Blocks
             string reg4 = "^-{3,}(<br>)?$";
             //string reg41 = "^-{3,}";
+            string reg41 = "^--<br>";
 
             // Grave accent
             string reg5 = "`.*?`";
@@ -288,11 +289,19 @@ namespace ConvertAsciiDoc4trados
             string reg68 = "^WARNING: *";
             string reg69 = "^IMPORTANT: *";
 
+            string reg70 = "^##BRAL##NOTE##BRAR##<br>";
+            string reg71 = "^##BRAL##CAUTION##BRAR##<br>";
+            string reg72 = "^##BRAL##TIP##BRAR##<br>";
+            string reg73 = "^##BRAL##WARNING##BRAR##<br>";
+            string reg74 = "^##BRAL##IMPORTANT##BRAR##<br>";
+            string reg75 = "^={4,}<br>";
+            string reg76 = "^##BARBAR##={4,}<br>";
+
             //string reg7 = "(\\S):{2,}$";
             //string reg71 = "(\\S):{2,} ";
             //string reg8 = "^/{2}[^/]+$";
             //string reg81 = "^/{3,}";
-            
+
             string reg9 = "<<[^>]*?>>";
             string reg90 = "^>>> ";
             /////
@@ -353,6 +362,22 @@ namespace ConvertAsciiDoc4trados
                 replaceMach2CODE_NonGroup2(reg67, ref lines[i]);
                 replaceMach2CODE_NonGroup2(reg68, ref lines[i]);
                 replaceMach2CODE_NonGroup2(reg69, ref lines[i]);
+
+                // "^##BRAL##NOTE##BRAL##<br>";
+                // "^##BRAL##CAUTION##BRAL##<br>";
+                // "^##BRAL##TIP##BRAL##<br>";
+                // "^##BRAL##WARNING##BRAL##<br>";
+                // "^##BRAL##IMPORTANT##BRAL##<br>";
+                // "^={4,}<br>"
+                replaceMach2CODE_NonGroup2(reg70, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg71, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg72, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg73, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg74, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg75, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg76, ref lines[i]);
+                replaceMach2CODE_NonGroup2(reg41, ref lines[i]);
+
 
 
                 // escape head space
@@ -546,6 +571,12 @@ namespace ConvertAsciiDoc4trados
 
                             var temp = System.Text.RegularExpressions.Regex.Replace(line, m.Value, rep);
                             line = temp;
+                            // replace <br></code>
+                            if (System.Text.RegularExpressions.Regex.IsMatch(line, "<br></code>"))
+                            {
+                                temp = System.Text.RegularExpressions.Regex.Replace(line, "<br></code>", "</code><br>");
+                                line = temp;
+                            }
 
                         }
                         m = m.NextMatch();
@@ -852,7 +883,19 @@ namespace ConvertAsciiDoc4trados
             {
                 if (System.Text.RegularExpressions.Regex.IsMatch(lines[i], "##BRAL##source,.+?##BRAR##"))
                 {
-                    if (findCodeHead == false)
+                    // When <code>-------------- has found
+                    if (System.Text.RegularExpressions.Regex.IsMatch(lines[i+1], "<code>\\-{3,}"))
+                    {
+                        while (i < lines.Length - 1)
+                        {
+                            if (System.Text.RegularExpressions.Regex.IsMatch(lines[i + 1], "\\-{3,}</code><br>"))
+                            {
+                                break;
+                            }
+                            i++;
+                        }
+                    }
+                    else if (findCodeHead == false)
                     {
                         var temp = System.Text.RegularExpressions.Regex.Replace(lines[i], "(##BRAL##source,.+?##BRAR##)<br>", "<code>$1");
                         lines[i] = temp;
