@@ -1701,7 +1701,7 @@ namespace ConvertAsciiDoc4trados
                 else if (m3.Success)
                 {
                     findCodeHead = true;
-                    while (i < lines.Length - 1)
+                    while (findCodeHead)
                     {
                         newLines.Add(lines[i]);
                         i++;
